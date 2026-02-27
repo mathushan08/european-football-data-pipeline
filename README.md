@@ -1,8 +1,8 @@
 # ⚽ End-to-End European Football Analytics Data Pipeline
 
-![Dashboard Preview](docs/assets/dashboard_preview.png)
+![Dashboard Preview](docs/assets/dashboard_preview.jpg)
 
-## 🔗 [Live Interactive Dashboard](https://lookerstudio.google.com/YOUR_DASHBOARD_LINK) <- Click Here to View Live
+## 🔗 [Live Interactive Dashboard](https://lookerstudio.google.com/s/vfkZ9yoyRQ8) <- Click Here to View Live
 
 ## 📖 Project Overview
 This project is an end-to-end Data Engineering pipeline that ingests, processes, and visualizes European football data (top 5 leagues: Premier League, La Liga, Bundesliga, Serie A, Ligue 1) from 2012 to 2025. It transforms raw Kaggle CSVs into a production-ready, partitioned data warehouse driving a real-time Looker Studio dashboard. 
