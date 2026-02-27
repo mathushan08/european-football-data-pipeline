@@ -11,60 +11,7 @@ The pipeline employs modern stack tools like **Mage AI, PySpark, dbt, BigQuery, 
 
 ## 🏗️ Architecture & Pipeline
 
-```mermaid
-flowchart LR
-    subgraph Container [Infrastructure & Setup]
-        direction TB
-        
-        subgraph Pipeline [Data Pipeline]
-            direction LR
-            
-            subgraph Ingestion [Ingestion]
-                direction LR
-                K(Kaggle API) --> |Raw CSVs| GCS[(Google Cloud \nStorage)]
-            end
-            
-            subgraph Transformation [Transformation]
-                direction LR
-                GCS --> Spark(Apache Spark \nDataproc)
-                Spark --> BQ[(BigQuery)]
-                BQ --> DBT(dbt)
-                DBT --> BQ
-            end
-            
-            subgraph Visualisation [Analysis & Visualisation]
-                direction LR
-                BQ --> Looker(Looker Studio)
-            end
-            
-            Ingestion --> Transformation
-            Transformation --> Visualisation
-        end
-        
-        subgraph Orchestration [Orchestration]
-            Mage(Mage AI)
-        end
-        
-        %% Hidden links to force layout
-        Pipeline --- Orchestration
-        
-        subgraph Base [Environment]
-            direction LR
-            Docker(Docker & \nDocker Compose) ~~~ TF(Terraform) ~~~ Git(GitHub)
-        end
-        
-        Orchestration --- Base
-    end
-
-    %% Styling
-    classDef container fill:#2d5066,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5,color:#fff;
-    classDef box fill:#7e9a83,stroke:#333,stroke-width:1px,color:#000;
-    classDef tool fill:#fff,stroke:#333,stroke-width:1px,color:#000;
-    
-    class Container container;
-    class Pipeline,Ingestion,Transformation,Visualisation,Orchestration,Base box;
-    class K,GCS,Spark,BQ,DBT,Looker,Mage,Docker,TF,Git tool;
-```
+![System Architecture Blueprint](docs/assets/system_architecture_diagram.png)
 
 ## 🚀 Tech Stack & Justification
 
