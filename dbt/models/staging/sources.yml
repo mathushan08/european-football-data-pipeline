@@ -1,0 +1,97 @@
+##
+# sources.yml — dbt Source Definitions
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT IS A dbt SOURCE?
+#   A "source" tells dbt about RAW tables that exist in your warehouse
+#   but were NOT created by dbt (e.g. loaded by Mage/Spark).
+#
+#   Declaring sources lets you:
+#   - Reference them with {{ source('name', 'table') }} in SQL
+#   - Add freshness checks (warn if data is > X hours old)
+#   - Document and test raw data
+#   - Track lineage: source → staging → mart
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 2
+
+sources:
+  - name: raw_football
+    description: >
+      Raw football analytics data loaded into BigQuery from GCS by the
+      Mage + Spark pipeline. The external table reads Parquet files
+      partitioned by season_year and competition_id.
+    database:  football-analytics-de   # GCP project ID
+    schema:    football_analytics      # BigQuery dataset
+
+    tables:
+      - name: player_season_stats
+        description: >
+          Aggregated player performance per season and league, produced by the
+          PySpark job running on Dataproc. Each row = one player in one league
+          in one season. Contains goals, assists, minutes played, cards,
+          and derived per-90 minute metrics.
+
+        # Freshness check config: warn if data is more than 7 days old
+        config:
+          freshness:
+            warn_after: {count: 7, period: day}
+
+        columns:
+          - name: player_id
+            description: Unique numeric player identifier from Transfermarkt
+            tests:
+              - not_null
+
+          - name: competition_id
+            description: "League code: GB1=Premier League, ES1=La Liga, L1=Bundesliga, IT1=Serie A, FR1=Ligue 1"
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['GB1', 'ES1', 'L1', 'IT1', 'FR1']
+
+          - name: league_name
+            description: Human-readable league name
+
+          - name: country_name
+            description: Country of the league
+
+          - name: season_year
+            description: Year in which the season started (e.g. 2022 = 2022/23 season)
+            tests:
+              - not_null
+
+          - name: total_appearances
+            description: Number of matches played in this season/league
+            tests:
+              - not_null
+
+          - name: total_goals
+            description: Total goals scored across all appearances this season
+
+          - name: total_assists
+            description: Total assists recorded across all appearances this season
+
+          - name: total_goal_contributions
+            description: Goals + assists (derived column from Spark)
+
+          - name: total_minutes
+            description: Total minutes played across all appearances
+
+          - name: avg_minutes_per_game
+            description: Average minutes played per appearance
+
+          - name: total_yellow_cards
+            description: Total yellow cards received this season
+
+          - name: total_red_cards
+            description: Total red cards received this season
+
+          - name: goals_per_90
+            description: Goals scored per 90 minutes played (normalised)
+
+          - name: assists_per_90
+            description: Assists per 90 minutes played
+
+          - name: performance_tier
+            description: "Categorical label based on goals: Elite Scorer, Good Scorer, etc."

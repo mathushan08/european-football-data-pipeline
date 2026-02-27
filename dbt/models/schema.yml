@@ -1,0 +1,145 @@
+##
+# schema.yml — dbt Model Tests & Documentation
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT IS schema.yml?
+#   This file serves two purposes:
+#   1. DOCUMENTATION: Describe every column so the dbt docs site shows it
+#   2. TESTS: dbt runs these SQL tests when you type `dbt test`
+#
+# BUILT-IN GENERIC TESTS:
+#   - not_null          → column must have no NULLs
+#   - unique            → column values must all be distinct
+#   - accepted_values   → column values must be from a list
+#   - relationships     → foreign key check between models
+#
+# WHY TEST DATA?
+#   Data pipelines fail silently. A test that runs on every deploy
+#   catches bugs before they reach your dashboard.
+#   Example: if the Spark job introduces a bug that creates NULL player_ids,
+#   the not_null test will fail and alert you.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 2
+
+models:
+
+  # ── Staging Model ────────────────────────────────────────────────────────
+  - name: stg_player_appearances
+    description: >
+      Cleaned and renamed staging layer on top of the raw player_season_stats
+      external table. One row per player × league × season. Source of truth
+      for all downstream marts.
+
+    columns:
+      - name: player_id
+        description: Unique Transfermarkt player identifier
+        tests:
+          - not_null
+
+      - name: competition_id
+        description: "League code (GB1, ES1, L1, IT1, FR1)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GB1', 'ES1', 'L1', 'IT1', 'FR1']
+
+      - name: season_year
+        description: Year the season started (e.g. 2022 = 2022/23 season)
+        tests:
+          - not_null
+
+      - name: total_appearances
+        description: Number of matches played; must be >= 1 (filtered in staging)
+        tests:
+          - not_null
+
+      - name: total_goals
+        description: Goals scored this season; must be >= 0
+        tests:
+          - not_null
+
+      - name: total_assists
+        description: Assists this season; must be >= 0
+        tests:
+          - not_null
+
+      - name: goals_per_90
+        description: Goals per 90 minutes; should be >= 0
+        tests:
+          - not_null
+
+      - name: season_label
+        description: "Human-readable label, e.g. '2022/23'"
+        tests:
+          - not_null
+
+  # ── Fact Model ───────────────────────────────────────────────────────────
+  - name: fact_player_performance
+    description: >
+      Core analytical fact table: one row per player × league × season.
+      Partitioned by season_year, clustered by competition_id + player_id.
+      Adds per-league rankings, consistency scores, and discipline rates.
+
+    columns:
+      - name: player_id
+        description: Player identifier
+        tests:
+          - not_null
+
+      - name: competition_id
+        description: League identifier
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GB1', 'ES1', 'L1', 'IT1', 'FR1']
+
+      - name: season_year
+        description: Season start year
+        tests:
+          - not_null
+
+      - name: goal_scorer_rank
+        description: >
+          Rank of this player by total_goals within their league in this season.
+          Rank 1 = top scorer.
+        tests:
+          - not_null
+
+      - name: is_top_10_scorer
+        description: Boolean — true if goal_scorer_rank <= 10
+        tests:
+          - not_null
+
+      - name: scorer_consistency_score
+        description: >
+          Composite metric: goals_per_90 * LN(total_appearances + 1).
+          Rewards both efficiency AND volume of appearances.
+        tests:
+          - not_null
+
+  # ── Dimension Model ──────────────────────────────────────────────────────
+  - name: dim_leagues
+    description: >
+      One row per league (5 rows total). Contains all-time aggregated stats
+      and display metadata. Primary dimension for league-level filtering.
+
+    columns:
+      - name: competition_id
+        description: League code — primary key
+        tests:
+          - not_null
+          - unique
+
+      - name: league_name
+        description: Full league name (e.g. Premier League)
+        tests:
+          - not_null
+          - unique
+
+      - name: display_order
+        description: UI display order by UEFA prestige (1=Premier League, 5=Ligue 1)
+        tests:
+          - not_null
+          - unique

@@ -1,0 +1,42 @@
+version: '3'
+
+# ─────────────────────────────────────────────────────────────────
+# Mage Orchestration - Football Analytics ETL Pipeline
+#
+# WHAT IS MAGE?
+#   Mage is a modern data pipeline tool. You define individual
+#   "blocks" (loader, transformer, exporter) and Mage connects
+#   them into a DAG (Directed Acyclic Graph) and runs them.
+#
+# HOW TO START:
+#   cd mage/
+#   docker-compose up
+#
+# THEN OPEN:
+#   http://localhost:6789
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  mage:
+    image: mageai/mageai:latest
+    container_name: football-mage
+    command: mage start football_etl
+    ports:
+      - "6789:6789"          # Mage web UI
+    volumes:
+      # Mount the mage project folder
+      - .:/home/src
+      # Mount GCP credentials so Mage can write to GCS
+      - ../credentials:/home/src/credentials
+      # Mount the raw CSV data so the loader block can read it
+      - ../data:/home/src/data
+    environment:
+      # Tell Mage where our GCP credentials live
+      GOOGLE_APPLICATION_CREDENTIALS: /home/src/credentials/service-account.json
+      # GCS bucket to export processed data to
+      GCS_BUCKET: football-analytics-de-data-lake
+      # GCP project
+      GCP_PROJECT: football-analytics-de
+      # Disable login screen for local development
+      REQUIRE_USER_AUTHENTICATION: 0
+    restart: on-failure

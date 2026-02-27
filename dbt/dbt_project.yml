@@ -1,0 +1,75 @@
+##
+# dbt_project.yml — Football Analytics dbt Project
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT IS THIS FILE?
+#   dbt reads this file to know:
+#   - What project/profile to use
+#   - Where to find models, tests, macros
+#   - How to materialise models (table, view, incremental)
+#   - BigQuery-specific settings (partition, cluster)
+#
+# KEY dbt CONCEPTS IN THIS FILE:
+#   - materialised: how dbt stores the model result in BigQuery
+#       "view"        → re-runs query each time, no storage cost
+#       "table"       → runs once and stores results (fast queries)
+#       "incremental" → only processes new/changed rows (efficient)
+#   - partition_by → splits a BQ table into segments (e.g. by year)
+#       BigQuery only reads the partitions matching your WHERE clause
+#       = massive cost savings on large tables
+#   - cluster_by  → sorts rows within each partition by a column
+#       = faster GROUP BY / WHERE on that column
+# ─────────────────────────────────────────────────────────────────────────────
+
+name:    'football_analytics'
+version: '1.0.0'
+
+# dbt will look for a profile named 'football_analytics' in ~/.dbt/profiles.yml
+profile: 'football_analytics'
+
+# Directory layout (relative to this file)
+model-paths:     ["models"]
+test-paths:      ["tests"]
+macro-paths:     ["macros"]
+seed-paths:      ["seeds"]
+snapshot-paths:  ["snapshots"]
+analysis-paths:  ["analyses"]
+docs-paths:      ["docs"]
+asset-paths:     ["assets"]
+
+target-path:  "target"
+clean-targets: ["target", "dbt_packages"]
+
+# ─── Model default configs ────────────────────────────────────────────────────
+models:
+  football_analytics:
+
+    # Staging layer: lightweight views — just rename/cast columns
+    staging:
+      +materialized: view
+
+    # Mart layer: physical tables, partitioned + clustered for cost/speed
+    marts:
+      +materialized: table
+
+      # Fact tables get partition + clustering for efficient BQ scans
+      facts:
+        +materialized: table
+        +partition_by:
+          field: season_year
+          data_type: int64
+          range:
+            start: 2012
+            end:   2026
+            interval: 1
+        +cluster_by:
+          - competition_id
+          - player_id
+
+      # Dimension tables are small — plain table, no partition needed
+      dimensions:
+        +materialized: table
+
+# ─── Seed file defaults ───────────────────────────────────────────────────────
+seeds:
+  football_analytics:
+    +schema: football_analytics

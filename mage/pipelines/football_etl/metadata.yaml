@@ -1,0 +1,16 @@
+blocks:
+- uuid: load_football_csvs
+  type: data_loader
+  upstream_blocks: []
+  downstream_blocks: [transform_football_data]
+- uuid: transform_football_data
+  type: transformer
+  upstream_blocks: [load_football_csvs]
+  downstream_blocks: [export_to_gcs]
+- uuid: export_to_gcs
+  type: data_exporter
+  upstream_blocks: [transform_football_data]
+  downstream_blocks: []
+description: 'ETL pipeline: Load Transfermarkt CSVs → Transform & filter → Export to GCS'
+name: football_etl
+type: python

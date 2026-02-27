@@ -1,0 +1,49 @@
+##
+# profiles.yml — dbt Connection Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT IS profiles.yml?
+#   This is dbt's connection file. It tells dbt HOW to connect to BigQuery.
+#   By default dbt looks for this in ~/.dbt/profiles.yml
+#   We put it in the project folder and pass --profiles-dir . when running.
+#
+# ENVIRONMENTS:
+#   - "dev"  → your local development (write to a dev_ schema)
+#   - "prod" → production (write to the live football_analytics schema)
+#
+# HOW GCP AUTH WORKS HERE:
+#   method: service-account
+#   keyfile: path to your service-account.json
+#   This is the same credentials file used by Mage and Terraform.
+#
+# SECURITY NOTE:
+#   profiles.yml is in .gitignore because it contains the path to credentials.
+#   Never commit credentials to git.
+# ─────────────────────────────────────────────────────────────────────────────
+
+football_analytics:
+  target: dev   # default target when you run `dbt run`
+  outputs:
+
+    dev:
+      type: bigquery
+      method: service-account
+      project:  football-analytics-de
+      dataset:  football_analytics          # BigQuery dataset
+      keyfile:  "../credentials/service-account.json"
+      location: us-central1                          # must match where dataset was created
+      threads: 4                            # parallel model execution
+      timeout_seconds: 300
+      priority: interactive
+      retries: 1
+
+    prod:
+      type: bigquery
+      method: service-account
+      project:  football-analytics-de
+      dataset:  football_analytics
+      keyfile:  "../credentials/service-account.json"
+      location: us-central1
+      threads: 8
+      timeout_seconds: 600
+      priority: batch
+      retries: 2

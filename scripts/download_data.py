@@ -1,4 +1,4 @@
-"""
+r"""
 Kaggle Data Download Script for Transfermarkt Football Dataset
 
 This script downloads the Transfermarkt player statistics dataset from Kaggle.
@@ -25,7 +25,7 @@ def check_kaggle_credentials():
     kaggle_json = kaggle_dir / 'kaggle.json'
     
     if not kaggle_json.exists():
-        print("❌ Kaggle credentials not found!")
+        print("[ERROR] Kaggle credentials not found!")
         print("\nSetup instructions:")
         print("1. Go to https://www.kaggle.com/account")
         print("2. Click 'Create New Token' under API section")
@@ -37,10 +37,10 @@ def check_kaggle_credentials():
         with open(kaggle_json, 'r') as f:
             creds = json.load(f)
             if 'username' in creds and 'key' in creds:
-                print(f"✅ Kaggle credentials found for user: {creds['username']}")
+                print(f"[OK] Kaggle credentials found for user: {creds['username']}")
                 return True
     except Exception as e:
-        print(f"❌ Error reading Kaggle credentials: {e}")
+        print(f"[ERROR] Error reading Kaggle credentials: {e}")
         return False
 
 def download_dataset():
@@ -55,8 +55,8 @@ def download_dataset():
         download_path = Path(__file__).parent.parent / "data" / "raw"
         download_path.mkdir(parents=True, exist_ok=True)
         
-        print(f"\n📥 Downloading dataset: {dataset}")
-        print(f"📁 Download location: {download_path}")
+        print(f"\n[DOWNLOADING] Dataset: {dataset}")
+        print(f"[DIR] Download location: {download_path}")
         
         # Download using Kaggle API
         kaggle.api.dataset_download_files(
@@ -66,10 +66,10 @@ def download_dataset():
             quiet=False
         )
         
-        print("\n✅ Dataset downloaded successfully!")
+        print("\n[OK] Dataset downloaded successfully!")
         
         # List downloaded files
-        print("\n📋 Downloaded files:")
+        print("\n[LIST] Downloaded files:")
         for file in sorted(download_path.glob("*.csv")):
             size_mb = file.stat().st_size / (1024 * 1024)
             print(f"   - {file.name} ({size_mb:.2f} MB)")
@@ -77,11 +77,11 @@ def download_dataset():
         return True
         
     except ImportError:
-        print("❌ Kaggle package not installed!")
+        print("[ERROR] Kaggle package not installed!")
         print("Run: pip install kaggle")
         return False
     except Exception as e:
-        print(f"❌ Error downloading dataset: {e}")
+        print(f"[ERROR] Error downloading dataset: {e}")
         return False
 
 def verify_data():
@@ -96,15 +96,15 @@ def verify_data():
         "appearances.csv"
     ]
     
-    print("\n🔍 Verifying downloaded files...")
+    print("\n[VERIFY] Verifying downloaded files...")
     all_present = True
     
     for file in expected_files:
         file_path = data_dir / file
         if file_path.exists():
-            print(f"   ✅ {file}")
+            print(f"   [OK] {file}")
         else:
-            print(f"   ❌ {file} - MISSING!")
+            print(f"   [MISSING] {file} - MISSING!")
             all_present = False
     
     return all_present
@@ -125,9 +125,9 @@ def main():
     
     # Step 3: Verify files
     if not verify_data():
-        print("\n⚠️  Warning: Some expected files are missing!")
+        print("\n[WARNING] Some expected files are missing!")
     else:
-        print("\n✅ All expected files verified!")
+        print("\n[OK] All expected files verified!")
     
     print("\n" + "=" * 60)
     print("Next steps:")
