@@ -12,42 +12,58 @@ The pipeline employs modern stack tools like **Mage AI, PySpark, dbt, BigQuery, 
 ## 🏗️ Architecture & Pipeline
 
 ```mermaid
-flowchart TD
-    subgraph Data Source
-        K(Kaggle API) --> |Raw CSVs| L(Local Data)
+flowchart LR
+    subgraph Container [Infrastructure & Setup]
+        direction TB
+        
+        subgraph Pipeline [Data Pipeline]
+            direction LR
+            
+            subgraph Ingestion [Ingestion]
+                direction LR
+                K(Kaggle API) --> |Raw CSVs| GCS[(Google Cloud \nStorage)]
+            end
+            
+            subgraph Transformation [Transformation]
+                direction LR
+                GCS --> Spark(Apache Spark \nDataproc)
+                Spark --> BQ[(BigQuery)]
+                BQ --> DBT(dbt)
+                DBT --> BQ
+            end
+            
+            subgraph Visualisation [Analysis & Visualisation]
+                direction LR
+                BQ --> Looker(Looker Studio)
+            end
+            
+            Ingestion --> Transformation
+            Transformation --> Visualisation
+        end
+        
+        subgraph Orchestration [Orchestration]
+            Mage(Mage AI)
+        end
+        
+        %% Hidden links to force layout
+        Pipeline --- Orchestration
+        
+        subgraph Base [Environment]
+            direction LR
+            Docker(Docker & \nDocker Compose) ~~~ TF(Terraform) ~~~ Git(GitHub)
+        end
+        
+        Orchestration --- Base
     end
 
-    subgraph Orchestration [Mage AI Orchestrator]
-        L --> |Extract| M1[Mage DataLoader]
-        M1 --> |Clean & Cast| M2[Mage Transformer]
-        M2 --> |Load Parquet| GCS_raw[(GCS Data Lake)]
-    end
-
-    subgraph Big Data Processing [GCP Dataproc]
-        GCS_raw --> |Read Parquet| Spark[PySpark Job]
-        Spark --> |Complex Aggregations, \nRankings, Metrics| GCS_proc[(GCS Processed)]
-        GCS_proc --> |External Table definition| BQ_Ext[BigQuery External Table]
-    end
-
-    subgraph Data Transformation [dbt Data Build Tool]
-        BQ_Ext --> |Source| DBT_stg[dbt Staging Models\n Views]
-        DBT_stg --> |Transform & Test| DBT_marts[dbt Mart Models\n Partitioned Tables]
-        DBT_marts --> |fact_player_performance\ndim_leagues\ndim_players| BQ_Wh[(BigQuery Warehouse)]
-    end
-
-    subgraph Visualization [Looker Studio]
-        BQ_Wh --> Dash[Interactive Dashboard\n Player & League Stats]
-    end
-
-    style K fill:#20BEFF,color:#fff
-    style GCS_raw fill:#FF9900,color:#fff
-    style GCS_proc fill:#FF9900,color:#fff
-    style BQ_Ext fill:#4285F4,color:#fff
-    style BQ_Wh fill:#4285F4,color:#fff
-    style Spark fill:#E25A1C,color:#fff
-    style DBT_stg fill:#FF694B,color:#fff
-    style DBT_marts fill:#FF694B,color:#fff
-    style Dash fill:#0459C2,color:#fff
+    %% Styling
+    classDef container fill:#2d5066,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5,color:#fff;
+    classDef box fill:#7e9a83,stroke:#333,stroke-width:1px,color:#000;
+    classDef tool fill:#fff,stroke:#333,stroke-width:1px,color:#000;
+    
+    class Container container;
+    class Pipeline,Ingestion,Transformation,Visualisation,Orchestration,Base box;
+    class K,GCS,Spark,BQ,DBT,Looker,Mage,Docker,TF,Git tool;
 ```
 
 ## 🚀 Tech Stack & Justification
