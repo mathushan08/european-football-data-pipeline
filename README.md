@@ -29,7 +29,7 @@ flowchart TD
         GCS_proc --> |External Table definition| BQ_Ext[BigQuery External Table]
     end
 
-    subgraph Data Transformation [dbt (Data Build Tool)]
+    subgraph Data Transformation [dbt Data Build Tool]
         BQ_Ext --> |Source| DBT_stg[dbt Staging Models\n Views]
         DBT_stg --> |Transform & Test| DBT_marts[dbt Mart Models\n Partitioned Tables]
         DBT_marts --> |fact_player_performance\ndim_leagues\ndim_players| BQ_Wh[(BigQuery Warehouse)]
