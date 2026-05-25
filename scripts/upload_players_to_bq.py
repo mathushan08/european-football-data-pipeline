@@ -75,7 +75,7 @@ job = client.load_table_from_dataframe(dim_players, table_ref, job_config=job_co
 job.result()  # Wait for completion
 
 table = client.get_table(table_ref)
-print(f"\n✅ Uploaded successfully!")
+print(f"\nUploaded successfully!")
 print(f"   Table: {table_ref}")
 print(f"   Rows:  {table.num_rows:,}")
 print(f"   Cols:  {[f.name for f in table.schema]}")

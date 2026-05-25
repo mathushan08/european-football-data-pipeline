@@ -1,21 +1,21 @@
-# ⚽ End-to-End European Football Analytics Data Pipeline
+# End-to-End European Football Analytics Data Pipeline
 
 ![Dashboard Preview](docs/assets/dashboard_preview.jpg)
 
-## 🔗 [Live Interactive Dashboard](https://lookerstudio.google.com/s/vfkZ9yoyRQ8) <- Click Here to View Live
+## [Live Interactive Dashboard](https://lookerstudio.google.com/s/vfkZ9yoyRQ8) <- Click Here to View Live
 
-## 📖 Project Overview
+## Project Overview
 This project is an end-to-end Data Engineering pipeline that ingests, processes, and visualizes European football data (top 5 leagues: Premier League, La Liga, Bundesliga, Serie A, Ligue 1) from 2012 to 2025. It transforms raw Kaggle CSVs into a production-ready, partitioned data warehouse driving a real-time Looker Studio dashboard. 
 
 The pipeline employs modern stack tools like **Mage AI, PySpark, dbt, BigQuery, and Terraform**, focusing on scalable architecture, data quality, and Infrastructure as Code (IaC).
 
 ---
 
-## 🏗️ Architecture & Pipeline
+## Architecture & Pipeline
 
 ![System Architecture Blueprint](docs/assets/system_architecture_diagram.png)
 
-## 🚀 Tech Stack & Justification
+## Tech Stack & Justification
 
 | Technology | Role | Why This Choice? |
 |------------|------|------------------|
@@ -31,20 +31,20 @@ The pipeline employs modern stack tools like **Mage AI, PySpark, dbt, BigQuery, 
 
 ---
 
-## ⚙️ Data Modeling (dbt)
+## Data Modeling (dbt)
 
 The dbt project employs a **dimensional modeling** approach with Kimball methodology:
 
 1. **Staging (`stg_player_appearances`)**: Cleans raw data, casts data types, and standardizes names. Built as a `VIEW`.
 2. **Dimension (`dim_players`, `dim_leagues`)**: Contains descriptive, all-time attributes. Built as `TABLE`.
 3. **Fact (`fact_player_performance`)**: Contains granular, seasonal metrics like goals, assists, per-90 indicators, and Yellow/Red cards. 
-    * ⚡ **Optimization:** Materialized as a partitioned `TABLE` (on `season_year`) and clustered on `competition_id` and `player_id` to ensure dashboard queries are highly performant and cost-efficient.
+    * **Optimization:** Materialized as a partitioned `TABLE` (on `season_year`) and clustered on `competition_id` and `player_id` to ensure dashboard queries are highly performant and cost-efficient.
 
 Over **27 Schema Tests** (Uniqueness, Not Null, Accepted Values) are enforced on the models to ensure data integrity before surfacing to the stakeholders.
 
 ---
 
-## 🏃‍♂️ How to Run the Project
+## How to Run the Project
 
 ### 1. Requirements
 - A Google Cloud Platform account

@@ -50,7 +50,7 @@ LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.dim_players` p
 print("Creating vw_player_dashboard view...")
 job = client.query(view_sql)
 job.result()
-print("✅ View created successfully!")
+print("View created successfully!")
 
 # Quick test
 test_sql = f"""

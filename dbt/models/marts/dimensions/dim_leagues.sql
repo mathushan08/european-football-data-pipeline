@@ -47,13 +47,13 @@ with_metadata AS (
         league_name,
         country_name,
 
-        -- Map country to flag emoji (useful in dashboards)
+        -- Map country (flag emoji removed)
         CASE competition_id
-            WHEN 'GB1' THEN '🏴󠁧󠁢󠁥󠁮󠁧󠁿'
-            WHEN 'ES1' THEN '🇪🇸'
-            WHEN 'L1'  THEN '🇩🇪'
-            WHEN 'IT1' THEN '🇮🇹'
-            WHEN 'FR1' THEN '🇫🇷'
+            WHEN 'GB1' THEN ''
+            WHEN 'ES1' THEN ''
+            WHEN 'L1'  THEN ''
+            WHEN 'IT1' THEN ''
+            WHEN 'FR1' THEN ''
         END AS country_flag,
 
         -- Display order for dashboards (UEFA ranking / prestige)
